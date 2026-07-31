@@ -110,11 +110,6 @@ export async function createMailTmAccount(
 
   }
 
-  const dispatcher = new Agent({
-    connectTimeout: 30000,
-    keepAliveTimeout: 30000,
-  });
-
   async function fetchWithRetry(
     url: string,
     options: RequestInit = {},
@@ -125,9 +120,7 @@ export async function createMailTmAccount(
 
       try {
         const response = await fetch(url, {
-          ...options,
-          dispatcher: dispatcher as any,
-        } as any);
+          ...options});
 
         return response;
 

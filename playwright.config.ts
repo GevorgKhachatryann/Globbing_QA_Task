@@ -34,7 +34,7 @@ use: {
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     // Uncomment for real cross-browser coverage once the suite is stable:
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
 });
