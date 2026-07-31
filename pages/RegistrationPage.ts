@@ -28,7 +28,7 @@ export class RegistrationPage extends BasePage {
   }
 
   async open() {
-    await this.goto(`https://am.globbing.com/hy/en/register/`);
+    await this.goto(`https://am.globbing.com/hy/registration/`);
         // await this.goto(`${env.baseUrl}/en/register/`);
   }
 
