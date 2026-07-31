@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 15
 
     steps:
@@ -19,16 +19,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install
 
-      - name: Run Playwright tests (Registration - CI-gated regression test)
+      - name: Run Playwright tests
         env:
           BASE_URL: ${{ vars.BASE_URL }}
           CI: true

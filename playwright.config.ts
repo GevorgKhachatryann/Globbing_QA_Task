@@ -19,7 +19,7 @@ export default defineConfig({
 
 use: {
   baseURL: process.env.BASE_URL ?? 'https://am.globbing.com',
-  headless: false,         
+  headless: !!process.env.CI,
   launchOptions: {
     slowMo: 1000,           
   },
