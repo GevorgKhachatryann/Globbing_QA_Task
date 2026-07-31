@@ -11,7 +11,8 @@ jobs:
   test:
     runs-on: windows-latest
     timeout-minutes: 15
-
+    env:
+      BASE_URL: https://am.globbing.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
