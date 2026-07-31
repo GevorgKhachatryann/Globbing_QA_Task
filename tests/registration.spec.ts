@@ -100,7 +100,7 @@ test.describe('Registration- Globbing', () => {
 
     await test.step('Assert validation errors are shown and the form is not accepted', async () => {
       await registrationPage.expectEmailValidationError();
-      await expect(page).toHaveURL(/register/);
+      await expect(page).toHaveURL(/registration/);
     });
   });
 
@@ -122,7 +122,7 @@ test.describe('Registration- Globbing', () => {
     await test.step('Submit and assert a validation error is shown, no verification email triggered', async () => {
       await registrationPage.submit();
       await registrationPage.expectPasswordValidationError();
-      await expect(page).toHaveURL(/register/);
+      await expect(page).toHaveURL(/registration/);
     });
   });
 });
