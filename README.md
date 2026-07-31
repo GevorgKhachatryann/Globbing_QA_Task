@@ -35,27 +35,24 @@ Automated end-to-end registration:
 - Confirm registration success
 
 ## Project Structure
+
+```text
 globbing-automation/
-│
 ├── pages/
-│ ├── RegistrationPage.ts
-│ └── RegistrationStepTwoPage.ts
-│
+│   ├── RegistrationPage.ts
+│   └── RegistrationStepTwoPage.ts
 ├── tests/
-│ └── registration.spec.ts
-│
+│   └── registration.spec.ts
 ├── utils/
-│ ├── dynamicEmail.ts
-│ └── mailtm.ts
-│
+│   ├── dynamicEmail.ts
+│   └── mailtm.ts
 ├── .github/
-│ └── workflows/
-│ └── playwright.yml
-│
+│   └── workflows/
+│       └── playwright.yml
 ├── playwright.config.ts
 ├── package.json
 └── README.md
-
+```
 
 ## Running Tests
 
