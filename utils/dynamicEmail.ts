@@ -1,10 +1,37 @@
 const DOMAIN = 'web-library.net';
 
-export function generateDynamicEmail(prefix = 'qa'): string {
-  const randomPart = Math.random().toString(36).slice(2, 8); 
+import { request } from '@playwright/test';
+
+const MAIL_TM_BASE = 'https://api.mail.tm';
+
+let cachedDomain: string | null = null;
+
+async function getActiveDomain(): Promise<string> {
+  if (cachedDomain) return cachedDomain;
+
+  const api = await request.newContext({ baseURL: MAIL_TM_BASE });
+  const res = await api.get('/domains');
+
+  if (!res.ok()) {
+    throw new Error(`Failed to fetch mail.tm domains: ${res.status()}`);
+  }
+
+  const data = await res.json();
+  const domains = data['hydra:member'] ?? [];
+
+  const active = domains.find((d: any) => d.isActive);
+  if (!active) throw new Error('No active mail.tm domain available');
+
+  cachedDomain = active.domain;
+  return cachedDomain!;
+}
+
+export async function generateDynamicEmail(prefix = 'qa'): Promise<string> {
+  const domain = await getActiveDomain();
+  const randomPart = Math.random().toString(36).slice(2, 8);
   const timestampPart = Date.now().toString(36);
   const localPart = `${prefix}.${randomPart}.${timestampPart}`.replace(/[^a-z0-9.]/gi, '');
-  return `${localPart}@${DOMAIN}`;
+  return `${localPart}@${domain}`;
 }
 
 export function generateDynamicPassword(): string {

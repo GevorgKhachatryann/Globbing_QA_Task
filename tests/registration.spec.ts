@@ -12,28 +12,39 @@ import {
   waitForMessage,
   getMessageBody,
   extractConfirmationLink,
-  MailTmAccount
+  MailTmAccount,
 } from '../utils/mailtm';
 
+test.describe('Registration - Globbing', () => {
+  test.describe.configure({ mode: 'serial' });
 
-test.describe('Registration- Globbing', () => {
-  test('TC_REG_001 - full registration flow with dynamic data', async ({ page }) => {
+  let email: string;
 
-    test.setTimeout(120000);
-    const email = generateDynamicEmail('qa');
+  test.beforeEach(async () => {
+    email = await generateDynamicEmail();
+  });
+
+  test('TC_REG_001 - complete registration with valid dynamic data', async ({ page }) => {
+    test.setTimeout(140000);
+
+    // Test data
     const password = generateDynamicPassword();
     const { firstName, lastName } = generateDynamicName();
     const { phoneNumber } = generateDynamicPhoneNumber();
+
+    // Page objects
     const registrationPage = new RegistrationPage(page);
     const stepTwoPage = new RegistrationStepTwoPage(page);
+
     let mailAccount: MailTmAccount;
 
-    await test.step('Create disposable inbox', async () => {
+    await test.step('Create disposable email account', async () => {
       mailAccount = await createMailTmAccount(email, password);
     });
 
-    await test.step('Open Registration and fill Step One', async () => {
+    await test.step('Open registration page and fill Step One', async () => {
       await registrationPage.open();
+
       await registrationPage.fillStepOne({
         email,
         password,
@@ -41,33 +52,29 @@ test.describe('Registration- Globbing', () => {
       });
     });
 
-    await test.step('Submit registration', async () => {
+    await test.step('Submit registration form', async () => {
       await registrationPage.submit();
       await registrationPage.expectVerificationEmailSentSuccessfully();
     });
 
-    let confirmationLink = '';
+    const confirmationLink = await test.step(
+      'Get confirmation link from verification email',
+      async () => {
+        const message = await waitForMessage(mailAccount, {
+          timeoutMs: 120000,
+          intervalMs: 5000,
+        });
 
-    await test.step('Read verification email', async () => {
+        const body = await getMessageBody(
+          mailAccount,
+          message.id
+        );
 
-      const message = await waitForMessage(mailAccount, {
-        timeoutMs: 120000,
-        intervalMs: 5000,
-      });
+        console.log('Verification email received.');
 
-      const body = await getMessageBody(
-        mailAccount,
-        message.id
-      );
-
-      console.log('EMAIL BODY:', body);
-      confirmationLink = extractConfirmationLink(body);
-      console.log(
-        'Confirmation URL:',
-        confirmationLink
-      );
-
-    });
+        return extractConfirmationLink(body);
+      }
+    );
 
     await test.step('Open confirmation link', async () => {
       await page.goto(confirmationLink, {
@@ -82,44 +89,49 @@ test.describe('Registration- Globbing', () => {
       await stepTwoPage.selectServiceCenter();
     });
 
-    await test.step('Finish registration', async () => {
+    await test.step('Complete registration', async () => {
       await stepTwoPage.confirmInDialog();
       await stepTwoPage.submit();
       await stepTwoPage.expectRegistrationSuccess();
     });
   });
 
-
-  test('TC_REG_002 - empty required fields block registration', async ({ page }) => {
+  test('TC_REG_002 - required fields prevent registration', async ({ page }) => {
     const registrationPage = new RegistrationPage(page);
 
-    await test.step('Open Registration and submit with everything empty', async () => {
+    await test.step('Open registration page', async () => {
       await registrationPage.open();
+    });
+
+    await test.step('Submit empty registration form', async () => {
       await registrationPage.submit();
     });
 
-    await test.step('Assert validation errors are shown and the form is not accepted', async () => {
+    await test.step('Verify required field validation', async () => {
       await registrationPage.expectEmailValidationError();
       await expect(page).toHaveURL(/registration/);
     });
   });
 
-  test('TC_REG_003 - password/confirmation mismatch blocks registration', async ({ page }) => {
-    const email = generateDynamicEmail('qa');
+  test('TC_REG_003 - password confirmation mismatch prevents registration', async ({ page }) => {
     const password = generateDynamicPassword();
     const { phoneNumber } = generateDynamicPhoneNumber();
+
     const registrationPage = new RegistrationPage(page);
 
-    await test.step('Fill Step One with a mismatched confirm-password value', async () => {
+    await test.step('Open registration page', async () => {
       await registrationPage.open();
+    });
+
+    await test.step('Fill registration form with mismatched passwords', async () => {
       await registrationPage.emailInput.fill(email);
       await registrationPage.passwordInput.fill(password);
-      await registrationPage.passwordConfirmInput.fill(password + 'X'); // deliberately different
+      await registrationPage.passwordConfirmInput.fill(`${password}X`);
       await registrationPage.phoneNumberInput.fill(phoneNumber);
       await registrationPage.termsCheckbox.check();
     });
 
-    await test.step('Submit and assert a validation error is shown, no verification email triggered', async () => {
+    await test.step('Submit form and verify password validation error', async () => {
       await registrationPage.submit();
       await registrationPage.expectPasswordValidationError();
       await expect(page).toHaveURL(/registration/);
